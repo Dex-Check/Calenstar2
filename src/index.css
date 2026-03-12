@@ -1,0 +1,90 @@
+:root {
+  /* Core palette — deep space with electric coral accent */
+  --bg:          #0a0a0f;
+  --bg-1:        #0f0f18;
+  --bg-2:        #141420;
+  --bg-card:     rgba(255,255,255,.045);
+  --bg-card-2:   rgba(255,255,255,.08);
+  --border:      rgba(255,255,255,.07);
+  --border-2:    rgba(255,255,255,.13);
+
+  --accent:      #ff4d6d;
+  --accent-2:    #ff6b35;
+  --accent-glow: rgba(255,77,109,.35);
+  --gold:        #ffd166;
+  --teal:        #06d6a0;
+  --blue:        #4cc9f0;
+
+  --text-1:      #f0eef8;
+  --text-2:      #8884a0;
+  --text-3:      #3d3a52;
+
+  --nav-h:       68px;
+  --safe-top:    max(44px, env(safe-area-inset-top));
+  --safe-bot:    max(20px, env(safe-area-inset-bottom));
+
+  --font-display: 'Syne', sans-serif;
+  --font-body:    'DM Sans', sans-serif;
+
+  --r-sm:  10px;
+  --r-md:  16px;
+  --r-lg:  22px;
+  --r-xl:  28px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  color: var(--text-1);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+button { cursor: pointer; font-family: inherit; }
+input, textarea { font-family: inherit; }
+a { color: inherit; text-decoration: none; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 0; }
+
+/* Animations */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; } to { opacity: 1; }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; } 50% { opacity: .4; }
+}
+@keyframes ring {
+  from { transform: translate(-50%,-50%) scale(1); opacity: .7; }
+  to   { transform: translate(-50%,-50%) scale(2.2); opacity: 0; }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.fade-up   { animation: fadeUp  .35s ease both; }
+.fade-in   { animation: fadeIn  .25s ease both; }
+.scale-in  { animation: scaleIn .3s  cubic-bezier(.34,1.56,.64,1) both; }
+.slide-up  { animation: slideUp .4s  cubic-bezier(.16,1,.3,1) both; }
+
+/* Stagger helpers */
+.d1 { animation-delay: .05s; }
+.d2 { animation-delay: .10s; }
+.d3 { animation-delay: .15s; }
+.d4 { animation-delay: .20s; }
+.d5 { animation-delay: .25s; }

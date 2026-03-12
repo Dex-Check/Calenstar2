@@ -1,0 +1,24 @@
+.card {
+  background: color-mix(in srgb, var(--ad-color) 6%, var(--bg-1));
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 16px;
+}
+.label {
+  font-size: 9px; font-family: var(--font-display); font-weight: 700;
+  color: var(--text-3); letter-spacing: 1.5px; text-transform: uppercase;
+  display: block; margin-bottom: 10px;
+}
+.inner { display: flex; align-items: center; gap: 12px; }
+.emoji { font-size: 28px; flex-shrink: 0; }
+.content { flex: 1; }
+.brand { font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--ad-color); margin-bottom: 2px; }
+.copy { font-size: 13px; color: var(--text-2); line-height: 1.4; }
+.cta {
+  background: color-mix(in srgb, var(--ad-color) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ad-color) 40%, transparent);
+  color: var(--ad-color); font-size: 12px; font-family: var(--font-display);
+  font-weight: 700; border-radius: 20px; padding: 7px 14px;
+  white-space: nowrap; transition: all .15s; flex-shrink: 0;
+}
+.cta:hover { background: color-mix(in srgb, var(--ad-color) 25%, transparent); }

@@ -1,0 +1,16 @@
+.page { min-height: 100%; }
+.header { padding: 16px 18px 14px; border-bottom: 1px solid var(--border); }
+.title { font-family: var(--font-display); font-size: 26px; font-weight: 800; }
+.center { display: flex; justify-content: center; padding: 60px 0; }
+.empty { padding: 60px 32px; text-align: center; }
+.emptyTitle { font-family: var(--font-display); font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.emptySub { font-size: 14px; color: var(--text-2); }
+.list { display: flex; flex-direction: column; }
+.item { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+.unread { background: rgba(255,77,109,.04); }
+.actor { flex-shrink: 0; }
+.actorAvatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+.actorFallback { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent-2)); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 16px; font-weight: 700; color: #fff; }
+.notifText { flex: 1; font-size: 14px; color: var(--text-2); line-height: 1.4; }
+.notifText strong { color: var(--text-1); }
+.time { font-size: 11px; color: var(--text-3); flex-shrink: 0; }
