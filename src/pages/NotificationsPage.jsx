@@ -11,7 +11,7 @@ export default function NotificationsPage() {
   const [notifs, setNotifs]   = useState([])
   const [loading, setLoading] = useState(true)
 
-  const { supported, permission, subscribed, loading: pushLoading, subscribe, unsubscribe } = usePushNotifications(uid)
+  const { supported, vapidReady, permission, subscribed, loading: pushLoading, error: pushError, subscribe, unsubscribe } = usePushNotifications(uid)
 
   useEffect(() => {
     async function load() {
@@ -44,12 +44,15 @@ export default function NotificationsPage() {
                 <p className={s.pushTitle}>Push notifications</p>
                 <p className={s.pushSub}>
                   {permission === 'denied'
-                    ? 'Blocked in browser settings — enable in site permissions'
-                    : subscribed
-                      ? 'On — you\'ll be notified of likes, comments & follows'
-                      : 'Off — tap to get notified of activity'
+                    ? '⚠ Blocked — enable in browser site settings'
+                    : !vapidReady
+                      ? '⚠ Add VITE_VAPID_PUBLIC_KEY to Vercel to enable'
+                      : subscribed
+                        ? '✓ On — notified of likes, comments & follows'
+                        : 'Off — tap to get notified of activity'
                   }
                 </p>
+                {pushError && <p className={s.pushError}>{pushError}</p>}
               </div>
             </div>
             <div className={s.pushToggleWrap}>
@@ -57,7 +60,7 @@ export default function NotificationsPage() {
                 <button
                   className={s.pushToggle + (subscribed ? ' ' + s.pushToggleOn : '')}
                   onClick={subscribed ? unsubscribe : subscribe}
-                  disabled={permission === 'denied'}
+                  disabled={permission === 'denied' || !vapidReady}
                 >
                   <div className={s.pushThumb} />
                 </button>

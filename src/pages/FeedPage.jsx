@@ -195,9 +195,11 @@ export default function FeedPage() {
                   {i===0?'🥇':i===1?'🥈':i===2?'🥉':`#${i+1}`}
                 </span>
                 <div className={s.leaderAvatar}>
-                  {p.avatar_url
-                    ? <img src={p.avatar_url} alt="" className={s.leaderAvatarImg} />
-                    : <div className={s.leaderAvatarFb}>{(p.username||'?')[0].toUpperCase()}</div>
+                  {!p.avatar_url
+                    ? <div className={s.leaderAvatarFb}>{(p.username||'?')[0].toUpperCase()}</div>
+                    : p.avatar_url.startsWith('emoji:')
+                      ? <div className={s.leaderAvatarEmoji}>{p.avatar_url.replace('emoji:','')}</div>
+                      : <img src={p.avatar_url} alt="" className={s.leaderAvatarImg} />
                   }
                 </div>
                 <p className={s.leaderName}>{p.id===uid?'You':`@${p.username}`}</p>
