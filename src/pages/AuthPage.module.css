@@ -3,91 +3,111 @@
   display: flex; align-items: center; justify-content: center;
   padding: 24px;
   position: relative; overflow: hidden;
+  background: var(--bg);
 }
 
+/* Animated star background */
 .bg {
-  position: absolute; inset: 0;
+  position: absolute; inset: 0; pointer-events: none;
   background:
-    radial-gradient(ellipse 70% 50% at 20% 20%, rgba(255,77,109,.15) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 40% at 80% 80%, rgba(76,201,240,.1) 0%, transparent 60%),
-    var(--bg);
-  pointer-events: none;
+    radial-gradient(ellipse 80% 60% at 20% 20%, rgba(255,45,155,.2) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 80%, rgba(191,0,255,.18) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 60% 10%, rgba(0,180,255,.12) 0%, transparent 60%);
+}
+/* Floating stars */
+.bg::before {
+  content: '★ ✦ ★ ✦ ★ ✦ ★ ✦ ★ ✦ ★';
+  position: absolute; top: 8%; left: 0; right: 0;
+  text-align: center; letter-spacing: 28px;
+  font-size: 11px; color: rgba(255,230,0,.3);
+  animation: twinkle 3s ease infinite;
+}
+.bg::after {
+  content: '✦ ★ ✦ ★ ✦ ★ ✦ ★ ✦ ★ ✦';
+  position: absolute; bottom: 12%; left: 0; right: 0;
+  text-align: center; letter-spacing: 24px;
+  font-size: 10px; color: rgba(0,180,255,.25);
+  animation: twinkle 4s ease infinite reverse;
 }
 
 .card {
   width: 100%; max-width: 380px;
-  background: var(--bg-1);
-  border: 1px solid var(--border-2);
+  background: linear-gradient(160deg, rgba(255,45,155,.08) 0%, rgba(191,0,255,.06) 50%, rgba(13,0,24,.95) 100%);
+  border: 2px solid rgba(255,45,155,.3);
   border-radius: var(--r-xl);
   padding: 36px 28px;
   position: relative; z-index: 1;
-  box-shadow: 0 32px 80px rgba(0,0,0,.6);
+  box-shadow: 0 32px 80px rgba(0,0,0,.6), 0 0 60px rgba(255,45,155,.12), inset 0 1px 0 rgba(255,255,255,.07);
+  animation: scaleIn .4s cubic-bezier(.34,1.56,.64,1) both;
 }
 
 .logo {
-  font-size: 36px; text-align: center; margin-bottom: 8px;
-  color: var(--accent);
-  filter: drop-shadow(0 0 16px var(--accent-glow));
+  font-size: 44px; text-align: center; margin-bottom: 6px;
+  animation: float 3s ease infinite;
+  filter: drop-shadow(0 0 20px rgba(255,230,0,.5));
 }
 
 .brand {
   font-family: var(--font-display);
-  font-size: 28px; font-weight: 800;
+  font-size: 32px;
   text-align: center; margin-bottom: 4px;
-  color: var(--text-1);
-  letter-spacing: -1px;
+  background: linear-gradient(135deg, var(--accent), var(--gold), var(--accent-2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  filter: drop-shadow(0 0 20px rgba(255,45,155,.3));
 }
 
 .tagline {
   text-align: center; color: var(--text-2);
-  font-size: 13px; margin-bottom: 28px;
+  font-size: 13px; margin-bottom: 28px; font-family: var(--font-body);
 }
 
 .tabs {
-  display: flex; gap: 4px;
-  background: var(--bg-2);
-  border: 1px solid var(--border);
+  display: flex; gap: 6px;
+  background: rgba(255,45,155,.06);
+  border: 2px solid rgba(255,45,155,.18);
   border-radius: var(--r-md);
   padding: 4px; margin-bottom: 24px;
 }
 
 .tab, .tabActive {
-  flex: 1; padding: 9px;
-  border: none; border-radius: 10px;
-  font-family: var(--font-display); font-size: 13px; font-weight: 600;
-  transition: all .2s;
-  cursor: pointer;
+  flex: 1; padding: 10px;
+  border: none; border-radius: 12px;
+  font-family: var(--font-display); font-size: 14px;
+  transition: all .2s; cursor: pointer;
 }
 .tab { background: none; color: var(--text-3); }
-.tabActive { background: var(--bg-card-2); color: var(--text-1); box-shadow: 0 2px 8px rgba(0,0,0,.3); }
+.tabActive {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(255,45,155,.35);
+}
 
 .form { display: flex; flex-direction: column; gap: 16px; }
-
 .field { display: flex; flex-direction: column; gap: 6px; }
 
 .label {
-  font-size: 11px; font-weight: 600;
-  color: var(--text-2); letter-spacing: 1.5px; text-transform: uppercase;
+  font-size: 11px;
+  color: var(--accent); letter-spacing: 2px; text-transform: uppercase;
   font-family: var(--font-display);
 }
 
 .input {
-  background: var(--bg-2);
-  border: 1px solid var(--border-2);
+  background: rgba(255,45,155,.05);
+  border: 2px solid rgba(255,45,155,.2);
   border-radius: var(--r-md);
   padding: 13px 16px;
   color: var(--text-1); font-size: 15px;
-  outline: none; transition: border-color .2s;
-  width: 100%;
+  outline: none; transition: all .2s; width: 100%;
 }
-.input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,77,109,.12); }
+.input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,45,155,.15), 0 0 20px rgba(255,45,155,.1); }
 .input::placeholder { color: var(--text-3); }
 
 .error {
-  color: #f87171; font-size: 13px; text-align: center;
-  background: rgba(248,113,113,.08);
-  border: 1px solid rgba(248,113,113,.2);
+  color: #ff6b9d; font-size: 13px; text-align: center;
+  background: rgba(255,45,155,.08);
+  border: 1.5px solid rgba(255,45,155,.25);
   border-radius: var(--r-sm); padding: 10px;
+  font-family: var(--font-body);
 }
 
 .submit {
@@ -95,15 +115,14 @@
   border: none; border-radius: var(--r-md);
   padding: 15px;
   color: #fff; font-family: var(--font-display);
-  font-size: 15px; font-weight: 700;
-  letter-spacing: .3px;
-  box-shadow: 0 8px 24px var(--accent-glow);
-  transition: transform .15s, box-shadow .15s;
+  font-size: 16px;
+  box-shadow: 0 8px 28px rgba(255,45,155,.45), 0 2px 0 rgba(0,0,0,.3);
+  transition: all .15s;
   display: flex; align-items: center; justify-content: center; gap: 8px;
 }
-.submit:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 12px 32px var(--accent-glow); }
+.submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(255,45,155,.55); }
 .submit:active:not(:disabled) { transform: translateY(0); }
 .submit:disabled { opacity: .6; }
 
-.title { font-family: var(--font-display); font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 8px; }
+.title { font-family: var(--font-display); font-size: 22px; text-align: center; margin-bottom: 8px; }
 .sub { color: var(--text-2); font-size: 14px; text-align: center; line-height: 1.6; }

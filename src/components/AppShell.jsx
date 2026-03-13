@@ -55,9 +55,10 @@ export default function AppShell({ children }) {
 
       <nav style={{
         display: 'flex', alignItems: 'center',
-        background: 'rgba(10,10,15,.97)',
+        background: 'linear-gradient(180deg, rgba(13,0,24,.95) 0%, rgba(26,0,48,1) 100%)',
         backdropFilter: 'blur(30px)', WebkitBackdropFilter: 'blur(30px)',
-        borderTop: '1px solid var(--border)',
+        borderTop: '2px solid rgba(255,45,155,.35)',
+        boxShadow: '0 -4px 32px rgba(255,45,155,.2), 0 -1px 0 rgba(0,180,255,.15)',
         paddingBottom: 'var(--safe-bot)',
         height: 'calc(var(--nav-h) + var(--safe-bot))',
         flexShrink: 0, zIndex: 100,
@@ -70,32 +71,50 @@ export default function AppShell({ children }) {
             <button key={tab.path} onClick={() => handleTabPress(tab.path)}
               style={{ flex:1, display:'flex', justifyContent:'center', alignItems:'center', background:'none', border:'none', paddingBottom:4 }}>
               <div style={{
-                width:52, height:52, borderRadius:'50%', marginTop:-22,
-                background:'linear-gradient(135deg,var(--accent),var(--accent-2))',
+                width:56, height:56, borderRadius:'50%', marginTop:-26,
+                background:'linear-gradient(135deg, var(--accent), var(--accent-2))',
                 display:'flex', alignItems:'center', justifyContent:'center',
-                boxShadow:'0 0 28px var(--accent-glow),0 4px 16px rgba(0,0,0,.5)',
+                boxShadow:'0 0 0 3px var(--bg), 0 0 0 5px var(--accent), 0 8px 32px rgba(255,45,155,.6)',
                 transition:'transform .15s',
+                fontSize: 22,
               }}>
-                <Icon size={22} color="#fff" />
+                ✦
               </div>
             </button>
           )
           return (
             <button key={tab.path} onClick={() => handleTabPress(tab.path)}
-              style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:3, background:'none', border:'none', padding:'10px 0', color:active?'var(--accent)':'var(--text-3)', transition:'color .2s', position:'relative' }}>
+              style={{
+                flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:3,
+                background:'none', border:'none', padding:'10px 0',
+                color: active ? 'var(--gold)' : 'var(--text-3)',
+                transition:'color .2s', position:'relative',
+              }}>
               <div style={{ position:'relative' }}>
-                <Icon size={22} color={active?'var(--accent)':'var(--text-3)'} />
+                <Icon size={22} color={active ? 'var(--gold)' : 'var(--text-3)'} />
+                {active && (
+                  <div style={{
+                    position:'absolute', bottom:-6, left:'50%', transform:'translateX(-50%)',
+                    width:4, height:4, borderRadius:'50%',
+                    background:'var(--gold)',
+                    boxShadow:'0 0 6px var(--gold)',
+                  }}/>
+                )}
                 {badge > 0 && (
                   <div style={{
-                    position:'absolute', top:-5, right:-7,
-                    width:16, height:16, borderRadius:'50%',
-                    background:'var(--accent)', fontSize:9, fontWeight:800,
+                    position:'absolute', top:-5, right:-8,
+                    minWidth:16, height:16, borderRadius:8, padding:'0 3px',
+                    background:'var(--accent)', fontSize:9, fontWeight:900,
                     display:'flex', alignItems:'center', justifyContent:'center',
                     color:'#fff', border:'2px solid var(--bg)',
+                    fontFamily:'var(--font-display)',
                   }}>{badge > 9 ? '9+' : badge}</div>
                 )}
               </div>
-              <span style={{ fontSize:9, fontFamily:'var(--font-display)', letterSpacing:1, textTransform:'uppercase', fontWeight:600 }}>{tab.label}</span>
+              <span style={{
+                fontSize:9, fontFamily:'var(--font-display)',
+                letterSpacing:.5, textTransform:'uppercase', fontWeight:400,
+              }}>{tab.label}</span>
             </button>
           )
         })}

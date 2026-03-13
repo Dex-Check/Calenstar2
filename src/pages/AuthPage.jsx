@@ -48,9 +48,9 @@ export default function AuthPage() {
     <div className={s.wrap}>
       <div className={s.bg} />
       <div className={s.card + ' scale-in'}>
-        <div className={s.logo}>★</div>
-        <h1 className={s.brand}>CalenStar</h1>
-        <p className={s.tagline}>Your daily life, shared.</p>
+        <div className={s.logo}>⭐</div>
+        <h1 className={s.brand}>★ CalenStar ★</h1>
+        <p className={s.tagline}>✦ your daily life, shared ✦</p>
 
         <div className={s.tabs}>
           <button className={mode==='login'?s.tabActive:s.tab} onClick={()=>{setMode('login');setError(null)}}>Sign in</button>
