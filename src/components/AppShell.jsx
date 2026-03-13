@@ -1,26 +1,58 @@
+import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { supabase } from '../lib/supabase'
 
 const TABS = [
-  { path: '/',              icon: HomeIcon,    label: 'Feed'      },
-  { path: '/discover',      icon: DiscoverIcon,label: 'Discover'  },
+  { path: '/',              icon: HomeIcon,    label: 'Feed'     },
+  { path: '/discover',      icon: DiscoverIcon,label: 'Discover' },
   { path: '/log',           icon: LogIcon,     label: 'Log',  special: true },
-  { path: '/notifications', icon: BellIcon,    label: 'Activity'  },
-  { path: '/profile',       icon: ProfileIcon, label: 'Me'        },
+  { path: '/messages',      icon: DMIcon,      label: 'DMs'      },
+  { path: '/profile',       icon: ProfileIcon, label: 'Me'       },
 ]
 
 export default function AppShell({ children }) {
-  const loc = useNavigate()
+  const nav = useNavigate()
   const { pathname } = useLocation()
+  const session = useAuth()
+  const uid = session?.user?.id
+  const [unreadDMs, setUnreadDMs] = useState(0)
+  const [unreadNotifs, setUnreadNotifs] = useState(0)
+
+  useEffect(() => {
+    if (!uid) return
+    checkUnread()
+    // Subscribe to new messages for badge
+    const channel = supabase
+      .channel('unread-badge')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `recipient_id=eq.${uid}` },
+        () => setUnreadDMs(c => c + 1))
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${uid}` },
+        () => setUnreadNotifs(c => c + 1))
+      .subscribe()
+    return () => supabase.removeChannel(channel)
+  }, [uid])
+
+  async function checkUnread() {
+    const [{ count: dms }, { count: notifs }] = await Promise.all([
+      supabase.from('messages').select('*', { count:'exact', head:true }).eq('recipient_id', uid).eq('read', false),
+      supabase.from('notifications').select('*', { count:'exact', head:true }).eq('user_id', uid).eq('read', false),
+    ])
+    setUnreadDMs(dms || 0)
+    setUnreadNotifs(notifs || 0)
+  }
+
+  function handleTabPress(path) {
+    if (path === '/messages') setUnreadDMs(0)
+    nav(path)
+  }
 
   return (
     <div style={{ width:'100%', height:'100%', display:'flex', flexDirection:'column', background:'var(--bg)', overflow:'hidden' }}>
-      {/* Main scroll area */}
       <div style={{ flex:1, overflowY:'auto', overflowX:'hidden', WebkitOverflowScrolling:'touch', paddingTop:'var(--safe-top)' }}>
         {children}
       </div>
 
-      {/* Bottom nav */}
       <nav style={{
         display: 'flex', alignItems: 'center',
         background: 'rgba(10,10,15,.97)',
@@ -28,30 +60,41 @@ export default function AppShell({ children }) {
         borderTop: '1px solid var(--border)',
         paddingBottom: 'var(--safe-bot)',
         height: 'calc(var(--nav-h) + var(--safe-bot))',
-        flexShrink: 0,
-        zIndex: 100,
+        flexShrink: 0, zIndex: 100,
       }}>
         {TABS.map(tab => {
           const active = pathname === tab.path || (tab.path !== '/' && pathname.startsWith(tab.path))
           const Icon = tab.icon
+          const badge = tab.path === '/messages' ? unreadDMs : 0
           if (tab.special) return (
-            <button key={tab.path} onClick={() => loc(tab.path)}
+            <button key={tab.path} onClick={() => handleTabPress(tab.path)}
               style={{ flex:1, display:'flex', justifyContent:'center', alignItems:'center', background:'none', border:'none', paddingBottom:4 }}>
               <div style={{
-                width: 52, height: 52, borderRadius: '50%', marginTop: -22,
-                background: 'linear-gradient(135deg, var(--accent), var(--accent-2))',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 0 28px var(--accent-glow), 0 4px 16px rgba(0,0,0,.5)',
-                transition: 'transform .15s',
+                width:52, height:52, borderRadius:'50%', marginTop:-22,
+                background:'linear-gradient(135deg,var(--accent),var(--accent-2))',
+                display:'flex', alignItems:'center', justifyContent:'center',
+                boxShadow:'0 0 28px var(--accent-glow),0 4px 16px rgba(0,0,0,.5)',
+                transition:'transform .15s',
               }}>
                 <Icon size={22} color="#fff" />
               </div>
             </button>
           )
           return (
-            <button key={tab.path} onClick={() => loc(tab.path)}
-              style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:3, background:'none', border:'none', padding:'10px 0', color: active ? 'var(--accent)' : 'var(--text-3)', transition:'color .2s' }}>
-              <Icon size={22} color={active ? 'var(--accent)' : 'var(--text-3)'} />
+            <button key={tab.path} onClick={() => handleTabPress(tab.path)}
+              style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:3, background:'none', border:'none', padding:'10px 0', color:active?'var(--accent)':'var(--text-3)', transition:'color .2s', position:'relative' }}>
+              <div style={{ position:'relative' }}>
+                <Icon size={22} color={active?'var(--accent)':'var(--text-3)'} />
+                {badge > 0 && (
+                  <div style={{
+                    position:'absolute', top:-5, right:-7,
+                    width:16, height:16, borderRadius:'50%',
+                    background:'var(--accent)', fontSize:9, fontWeight:800,
+                    display:'flex', alignItems:'center', justifyContent:'center',
+                    color:'#fff', border:'2px solid var(--bg)',
+                  }}>{badge > 9 ? '9+' : badge}</div>
+                )}
+              </div>
               <span style={{ fontSize:9, fontFamily:'var(--font-display)', letterSpacing:1, textTransform:'uppercase', fontWeight:600 }}>{tab.label}</span>
             </button>
           )
@@ -61,7 +104,6 @@ export default function AppShell({ children }) {
   )
 }
 
-// ── Icons ──────────────────────────────────────────────────
 function HomeIcon({ size, color }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
 }
@@ -71,8 +113,8 @@ function DiscoverIcon({ size, color }) {
 function LogIcon({ size, color }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
 }
-function BellIcon({ size, color }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+function DMIcon({ size, color }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="9" y1="10" x2="15" y2="10"/><line x1="9" y1="14" x2="13" y2="14"/></svg>
 }
 function ProfileIcon({ size, color }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>

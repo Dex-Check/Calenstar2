@@ -317,7 +317,11 @@ export default function ProfilePage() {
 
       {/* Sign out at bottom of own profile */}
       {isOwn && (
-        <button className={s.signOutBtn} onClick={() => supabase.auth.signOut()}>Sign out</button>
+        <div className={s.profileActions}>
+          <button className={s.profileActionBtn} onClick={() => nav('/stats')}>📊 My Stats</button>
+          <button className={s.profileActionBtn} onClick={() => nav('/notifications')}>🔔 Activity</button>
+          <button className={s.signOutBtn} onClick={() => supabase.auth.signOut()}>Sign out</button>
+        </div>
       )}
     </div>
   )

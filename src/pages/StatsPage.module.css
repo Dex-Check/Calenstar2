@@ -1,0 +1,101 @@
+.page { min-height: 100%; padding-bottom: 32px; }
+.center { display: flex; justify-content: center; padding: 80px 0; }
+
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 16px 12px;
+  position: sticky; top: 0; z-index: 10;
+  background: rgba(10,10,15,.97); backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border);
+}
+.title { font-family: var(--font-display); font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+.rangeTabs { display: flex; gap: 4px; }
+.rangeTab {
+  padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700;
+  font-family: var(--font-display); background: var(--bg-2);
+  border: 1px solid var(--border-2); color: var(--text-2); transition: all .15s;
+}
+.rangeActive { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 4px 12px rgba(255,77,109,.3); }
+
+/* ── Stat cards ── */
+.cards { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; padding: 16px; }
+.card {
+  background: var(--bg-card); border: 1px solid var(--border-2);
+  border-radius: var(--r-md); padding: 14px 10px; text-align: center;
+}
+.cardVal { font-family: var(--font-display); font-size: 26px; font-weight: 900; letter-spacing: -1px; line-height: 1; }
+.cardUnit { font-size: 18px; margin-left: 2px; }
+.cardLabel { font-size: 10px; color: var(--text-2); margin-top: 4px; line-height: 1.3; text-transform: uppercase; letter-spacing: .4px; }
+
+/* ── Sections ── */
+.section { padding: 16px; border-top: 1px solid var(--border); }
+.sectionTitle { font-family: var(--font-display); font-size: 14px; font-weight: 800; color: var(--text-2); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 14px; }
+
+/* ── Heatmap ── */
+.heatmap {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 10), 1fr);
+  gap: 5px;
+}
+.heatCell {
+  aspect-ratio: 1; border-radius: 6px;
+  background: var(--bg-2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; transition: transform .1s;
+  position: relative; overflow: hidden;
+}
+.heatFilled {
+  background: rgba(255,77,109,.2); border-color: rgba(255,77,109,.4);
+  box-shadow: 0 0 8px rgba(255,77,109,.15);
+}
+.heatToday { border-color: var(--gold); box-shadow: 0 0 8px rgba(255,209,102,.3); }
+.heatMood { font-size: 12px; }
+.heatLegend { font-size: 12px; color: var(--text-3); margin-top: 10px; text-align: center; }
+
+/* ── Bar chart ── */
+.barChart {
+  display: flex; gap: 6px; align-items: flex-end;
+  height: 120px; padding-bottom: 28px; position: relative;
+}
+.bar {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: flex-end; gap: 2px; height: 100%; position: relative;
+}
+.barFill {
+  width: 100%; border-radius: 6px 6px 0 0; min-height: 4px;
+  background: linear-gradient(180deg, var(--accent), rgba(255,77,109,.4));
+  transition: height .4s cubic-bezier(.34,1.56,.64,1);
+}
+.barCount { font-size: 10px; font-weight: 700; color: var(--text-2); font-family: var(--font-display); position: absolute; top: -16px; }
+.barLabel {
+  position: absolute; bottom: -22px;
+  font-size: 9px; color: var(--text-3); white-space: nowrap;
+  transform: rotate(-30deg); transform-origin: top center;
+}
+
+/* ── Mood list ── */
+.moodList { display: flex; flex-direction: column; gap: 10px; }
+.moodRow { display: flex; align-items: center; gap: 10px; }
+.moodEmoji { font-size: 20px; width: 28px; text-align: center; flex-shrink: 0; }
+.moodBarWrap { flex: 1; height: 8px; background: var(--bg-2); border-radius: 4px; overflow: hidden; }
+.moodBar { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .5s ease; }
+.moodCount { font-size: 13px; font-weight: 700; font-family: var(--font-display); width: 22px; text-align: right; flex-shrink: 0; }
+.moodName { font-size: 12px; color: var(--text-2); width: 80px; flex-shrink: 0; }
+.topMoodNote {
+  margin-top: 14px; padding: 12px 16px; border-radius: var(--r-md);
+  background: rgba(255,77,109,.08); border: 1px solid rgba(255,77,109,.2);
+  font-size: 14px; text-align: center; font-family: var(--font-display); font-weight: 600;
+}
+
+/* ── Category list ── */
+.catList { display: flex; flex-direction: column; gap: 10px; }
+.catRow { display: flex; align-items: center; gap: 10px; }
+.catIcon { font-size: 18px; width: 28px; text-align: center; flex-shrink: 0; }
+.catBarWrap { flex: 1; height: 8px; background: var(--bg-2); border-radius: 4px; overflow: hidden; }
+.catBar { height: 100%; border-radius: 4px; opacity: .85; transition: width .5s ease; }
+.catCount { font-size: 13px; font-weight: 700; font-family: var(--font-display); width: 22px; text-align: right; flex-shrink: 0; }
+
+.empty { padding: 48px 24px; text-align: center; }
+.emptyIcon { font-size: 40px; margin-bottom: 10px; }
+.emptyTitle { font-family: var(--font-display); font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+.emptySub { font-size: 13px; color: var(--text-2); line-height: 1.6; }

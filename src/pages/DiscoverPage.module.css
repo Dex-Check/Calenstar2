@@ -1,23 +1,74 @@
-.page { min-height: 100%; }
-.header { padding: 16px 16px 0; background: var(--bg); position: sticky; top: 0; z-index: 10; backdrop-filter: blur(20px); }
-.title { font-family: var(--font-display); font-size: 26px; font-weight: 800; margin-bottom: 14px; }
-.searchWrap { position: relative; margin-bottom: 12px; }
-.searchIcon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-3); font-size: 16px; }
+.page {
+  display: flex; flex-direction: column;
+  height: 100%; overflow: hidden;
+}
+
+/* Sticky header that stays put even when keyboard opens */
+.header {
+  flex-shrink: 0;
+  padding: 16px 16px 0;
+  background: rgba(10,10,15,.97);
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 20;
+}
+
+.title {
+  font-family: var(--font-display); font-size: 26px; font-weight: 800;
+  margin-bottom: 12px; letter-spacing: -0.5px;
+}
+
+.searchWrap {
+  position: relative; margin-bottom: 10px;
+}
+.searchIcon {
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  color: var(--text-3); font-size: 15px; pointer-events: none;
+}
 .searchInput {
   width: 100%; background: var(--bg-2); border: 1px solid var(--border-2);
-  border-radius: 24px; padding: 11px 16px 11px 40px;
+  border-radius: 24px; padding: 11px 40px 11px 40px;
   color: var(--text-1); font-size: 15px; outline: none;
+  transition: border-color .2s;
+  /* Prevents iOS zoom on focus */
+  font-size: max(16px, 15px);
 }
+.searchInput:focus { border-color: var(--accent); }
 .searchInput::placeholder { color: var(--text-3); }
-.moodFilters { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 12px; }
-.moodFilters::-webkit-scrollbar { display: none; }
+.clearBtn {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; color: var(--text-3);
+  font-size: 16px; padding: 4px 6px; line-height: 1;
+  transition: color .15s;
+}
+.clearBtn:hover { color: var(--text-1); }
+
+.moodRow {
+  display: flex; gap: 6px; overflow-x: auto; padding-bottom: 12px;
+}
+.moodRow::-webkit-scrollbar { display: none; }
 .moodPill {
   flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%;
   background: var(--bg-2); border: 1.5px solid transparent;
   font-size: 18px; transition: all .15s;
 }
-.moodActive { border-color: var(--accent); background: rgba(255,77,109,.12); box-shadow: 0 0 10px rgba(255,77,109,.2); }
+.moodPill:hover { border-color: var(--border-2); }
+.moodActive {
+  border-color: var(--accent);
+  background: rgba(255,77,109,.12);
+  box-shadow: 0 0 10px rgba(255,77,109,.2);
+  transform: scale(1.05);
+}
 
-.feed { padding: 8px 0; }
+/* Scrollable feed */
+.feed {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
 .center { display: flex; justify-content: center; padding: 60px 0; }
-.empty { text-align: center; color: var(--text-3); padding: 40px; font-size: 14px; }
+
+.empty { padding: 48px 24px; text-align: center; }
+.emptyIcon { font-size: 36px; margin-bottom: 10px; }
+.emptyTitle { font-family: var(--font-display); font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+.emptySub { font-size: 13px; color: var(--text-2); line-height: 1.6; }

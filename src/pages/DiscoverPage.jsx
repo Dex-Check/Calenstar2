@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import EntryCard from '../components/EntryCard'
@@ -10,6 +10,7 @@ const MOODS = ["🔥","✨","💪","🌙","🌱","😤","🎯","🧘","🏆","�
 export default function DiscoverPage() {
   const session = useAuth()
   const uid = session.user.id
+  const inputRef = useRef()
 
   const [entries, setEntries]       = useState([])
   const [loading, setLoading]       = useState(true)
@@ -33,23 +34,19 @@ export default function DiscoverPage() {
 
       if (!rawEntries?.length) { setEntries([]); return }
 
-      // Check which ones current user liked
-      const entryIds = rawEntries.map(e => e.id)
-      const { data: myLikes } = await supabase
-        .from('likes').select('entry_id').eq('user_id', uid).in('entry_id', entryIds)
-      const likedSet = new Set((myLikes||[]).map(l => l.entry_id))
-
-      // Check which authors current user follows
+      const entryIds  = rawEntries.map(e => e.id)
       const authorIds = [...new Set(rawEntries.map(e => e.user_id).filter(id => id !== uid))]
-      const { data: myFollows } = await supabase
-        .from('follows').select('following_id').eq('follower_id', uid).eq('status','accepted')
-        .in('following_id', authorIds)
+
+      const [{ data: myLikes }, { data: myFollows }] = await Promise.all([
+        supabase.from('likes').select('entry_id').eq('user_id', uid).in('entry_id', entryIds),
+        supabase.from('follows').select('following_id').eq('follower_id', uid).eq('status','accepted').in('following_id', authorIds),
+      ])
+
+      const likedSet     = new Set((myLikes||[]).map(l => l.entry_id))
       const followingSet = new Set((myFollows||[]).map(f => f.following_id))
 
       setEntries(rawEntries.map(e => ({ ...e, liked: likedSet.has(e.id), following: followingSet.has(e.user_id) })))
-    } finally {
-      setLoading(false)
-    }
+    } finally { setLoading(false) }
   }
 
   async function handleLike(entryId, liked) {
@@ -83,17 +80,23 @@ export default function DiscoverPage() {
 
   return (
     <div className={s.page}>
-      <header className={s.header}>
+      {/* Sticky header — fixed so keyboard doesn't push it away */}
+      <div className={s.header}>
         <h1 className={s.title}>Discover</h1>
         <div className={s.searchWrap}>
           <span className={s.searchIcon}>◎</span>
           <input
+            ref={inputRef}
             className={s.searchInput}
             placeholder="Search entries & people…"
             value={search}
             onChange={e => setSearch(e.target.value)}
+            // Dismiss keyboard on Enter
+            onKeyDown={e => e.key === 'Enter' && inputRef.current?.blur()}
           />
-          {search && <button className={s.clearSearch} onClick={() => setSearch('')}>×</button>}
+          {search && (
+            <button className={s.clearBtn} onClick={() => { setSearch(''); inputRef.current?.focus() }}>✕</button>
+          )}
         </div>
         <div className={s.moodRow}>
           {MOODS.map(m => (
@@ -104,30 +107,31 @@ export default function DiscoverPage() {
             >{m}</button>
           ))}
         </div>
-      </header>
+      </div>
 
-      {loading ? (
-        <div className={s.center}><Spinner /></div>
-      ) : (
-        <div className={s.feed}>
-          {filtered.length === 0 ? (
-            <div className={s.empty}>
-              <p>No public posts found.</p>
-            </div>
-          ) : (
-            filtered.map((e, i) => (
-              <EntryCard
-                key={e.id}
-                entry={e}
-                currentUserId={uid}
-                onLike={handleLike}
-                onFollow={handleFollow}
-                delay={i}
-              />
-            ))
-          )}
-        </div>
-      )}
+      {/* Scrollable content */}
+      <div className={s.feed}>
+        {loading ? (
+          <div className={s.center}><Spinner /></div>
+        ) : filtered.length === 0 ? (
+          <div className={s.empty}>
+            <p className={s.emptyIcon}>{search ? '🔍' : '✨'}</p>
+            <p className={s.emptyTitle}>{search ? `No results for "${search}"` : 'No public posts yet'}</p>
+            <p className={s.emptySub}>{search ? 'Try a different search term' : 'Be the first to post something public!'}</p>
+          </div>
+        ) : (
+          filtered.map((e, i) => (
+            <EntryCard
+              key={e.id}
+              entry={e}
+              currentUserId={uid}
+              onLike={handleLike}
+              onFollow={handleFollow}
+              delay={i}
+            />
+          ))
+        )}
+      </div>
     </div>
   )
 }

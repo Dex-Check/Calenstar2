@@ -9,6 +9,8 @@ import LogPage           from './pages/LogPage'
 import ProfilePage       from './pages/ProfilePage'
 import DiscoverPage      from './pages/DiscoverPage'
 import NotificationsPage from './pages/NotificationsPage'
+import DMPage            from './pages/DMPage'
+import StatsPage         from './pages/StatsPage'
 import AppShell          from './components/AppShell'
 import Spinner           from './components/Spinner'
 
@@ -56,6 +58,8 @@ function Routes_() {
         <Route path="/log"           element={<LogPage />} />
         <Route path="/discover"      element={<DiscoverPage />} />
         <Route path="/notifications" element={<NotificationsPage />} />
+        <Route path="/messages"      element={<DMPage />} />
+        <Route path="/stats"         element={<StatsPage />} />
         <Route path="/profile"       element={<ProfilePage />} />
         <Route path="/profile/:id"   element={<ProfilePage />} />
         <Route path="*"              element={<Navigate to="/" />} />
