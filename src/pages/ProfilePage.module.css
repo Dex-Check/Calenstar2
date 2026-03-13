@@ -162,6 +162,7 @@
   text-align: left; transition: all .15s;
 }
 .profileActionBtn:hover { background: var(--bg-2); border-color: var(--accent); }
+.signOutBtn {
   margin: 24px auto 32px; display: block;
   background: none; border: 1px solid var(--border-2);
   border-radius: 20px; padding: 9px 20px;
