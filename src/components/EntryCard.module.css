@@ -74,12 +74,20 @@
 .liked { color: var(--accent) !important; }
 .active { color: var(--blue) !important; }
 
+.liveDot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--teal);
+  box-shadow: 0 0 6px var(--teal);
+  animation: pulse 1.5s ease infinite;
+  display: inline-block; margin-left: 2px;
+}
+
 /* Comments */
 .comments {
   padding: 12px 0 8px;
   border-top: 1px solid var(--border);
-  margin-top: 0;
 }
+.noComments { font-size: 13px; color: var(--text-3); text-align: center; padding: 8px 0 12px; font-style: italic; }
 .commentList { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
 .commentRow { display: flex; gap: 8px; align-items: flex-start; }
 .commentAvatar { flex-shrink: 0; }

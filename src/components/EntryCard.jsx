@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import s from './EntryCard.module.css'
@@ -12,30 +12,98 @@ const CATEGORIES = [
   { id:'health',   label:'Health',   icon:'🍃', color:'#80ffdb' },
 ]
 
-// Handles regular photos, emoji: prefix, and fallback initials
-function AvatarThumb({ url, username, small }) {
-  const sz = small ? s.commentAvatarImg : s.avatarImg
-  const fbSz = small ? s.commentAvatarFb : s.avatarFb
-  if (!url) return <div className={fbSz}>{(username||'?')[0].toUpperCase()}</div>
-  if (url.startsWith('emoji:')) return <div className={small ? s.commentAvatarEmoji : s.avatarEmoji}>{url.replace('emoji:','')}</div>
-  return <img src={url} alt="" className={sz} />
+export function AvatarThumb({ url, username, small }) {
+  const imgCls  = small ? s.commentAvatarImg   : s.avatarImg
+  const fbCls   = small ? s.commentAvatarFb    : s.avatarFb
+  const emojiCls = small ? s.commentAvatarEmoji : s.avatarEmoji
+  if (!url) return <div className={fbCls}>{(username||'?')[0].toUpperCase()}</div>
+  if (url.startsWith('emoji:')) return <div className={emojiCls}>{url.replace('emoji:','')}</div>
+  return <img src={url} alt="" className={imgCls} />
 }
 
 export default function EntryCard({ entry, currentUserId, onLike, onFollow, delay = 0 }) {
   const nav = useNavigate()
-  const [showComments, setShowComments] = useState(false)
-  const [comments, setComments]         = useState([])
+  const [showComments, setShowComments]     = useState(false)
+  const [comments, setComments]             = useState([])
   const [commentsLoaded, setCommentsLoaded] = useState(false)
-  const [comment, setComment]           = useState('')
-  const [submitting, setSubmitting]     = useState(false)
+  const [comment, setComment]               = useState('')
+  const [submitting, setSubmitting]         = useState(false)
   const [localFollowing, setLocalFollowing] = useState(entry.following || false)
+  const [localLikeCount, setLocalLikeCount] = useState(entry.like_count || 0)
+  const [localCommentCount, setLocalCommentCount] = useState(entry.comment_count || 0)
+  const channelRef = useRef(null)
+  const bottomRef  = useRef(null)
 
-  const isOwn    = entry.user_id === currentUserId
-  const profile  = entry.profiles || {}
-  const cats     = (entry.cats || []).map(id => CATEGORIES.find(c => c.id === id)).filter(Boolean)
+  const isOwn   = entry.user_id === currentUserId
+  const profile = entry.profiles || {}
+  const cats    = (entry.cats || []).map(id => CATEGORIES.find(c => c.id === id)).filter(Boolean)
   const mediaUrls = entry.media_urls || []
   const isVideo   = url => /\.(mp4|mov|webm)/i.test(url)
   const dateStr   = new Date(entry.date + 'T12:00:00').toLocaleDateString('en-US', { month:'short', day:'numeric' })
+
+  // ── Real-time subscription when comments are open ──
+  useEffect(() => {
+    if (!showComments) {
+      // Unsubscribe when closed
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current)
+        channelRef.current = null
+      }
+      return
+    }
+
+    // Subscribe to new comments on this entry
+    const channel = supabase
+      .channel(`comments:${entry.id}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'comments',
+        filter: `entry_id=eq.${entry.id}`,
+      }, async (payload) => {
+        // Fetch the full comment with profile
+        const { data } = await supabase
+          .from('comments')
+          .select('*, profiles(username, avatar_url)')
+          .eq('id', payload.new.id)
+          .single()
+        if (data) {
+          setComments(prev => {
+            // Avoid duplicates (our own submission already added it)
+            if (prev.find(c => c.id === data.id)) return prev
+            return [...prev, data]
+          })
+          setLocalCommentCount(c => c + 1)
+          // Scroll to bottom
+          setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
+        }
+      })
+      .subscribe()
+
+    channelRef.current = channel
+    return () => {
+      supabase.removeChannel(channel)
+      channelRef.current = null
+    }
+  }, [showComments, entry.id])
+
+  // ── Real-time like count ──
+  useEffect(() => {
+    const channel = supabase
+      .channel(`likes:${entry.id}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'likes',
+        filter: `entry_id=eq.${entry.id}`,
+      }, () => {
+        // Refetch like count
+        supabase.from('entries').select('like_count').eq('id', entry.id).single()
+          .then(({ data }) => { if (data) setLocalLikeCount(data.like_count) })
+      })
+      .subscribe()
+    return () => supabase.removeChannel(channel)
+  }, [entry.id])
 
   async function loadComments() {
     if (commentsLoaded) return
@@ -44,14 +112,15 @@ export default function EntryCard({ entry, currentUserId, onLike, onFollow, dela
       .select('*, profiles(username, avatar_url)')
       .eq('entry_id', entry.id)
       .order('created_at', { ascending: true })
-      .limit(20)
+      .limit(50)
     setComments(data || [])
     setCommentsLoaded(true)
   }
 
   function toggleComments() {
-    setShowComments(v => !v)
-    if (!commentsLoaded) loadComments()
+    const next = !showComments
+    setShowComments(next)
+    if (next && !commentsLoaded) loadComments()
   }
 
   async function submitComment() {
@@ -67,7 +136,8 @@ export default function EntryCard({ entry, currentUserId, onLike, onFollow, dela
         .single()
       if (!error && data) {
         setComments(p => [...p, data])
-        // Insert notification for entry owner
+        setLocalCommentCount(c => c + 1)
+        setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
         if (entry.user_id !== currentUserId) {
           await supabase.from('notifications').insert({
             user_id:  entry.user_id,
@@ -86,14 +156,16 @@ export default function EntryCard({ entry, currentUserId, onLike, onFollow, dela
     const newVal = !localFollowing
     setLocalFollowing(newVal)
     await onFollow?.(entry.user_id, localFollowing)
-    // Insert notification
     if (newVal) {
       await supabase.from('notifications').insert({
-        user_id:  entry.user_id,
-        actor_id: currentUserId,
-        type:     'follow',
+        user_id: entry.user_id, actor_id: currentUserId, type: 'follow',
       })
     }
+  }
+
+  function handleLikeClick() {
+    onLike(entry.id, entry.liked)
+    setLocalLikeCount(c => entry.liked ? c - 1 : c + 1)
   }
 
   return (
@@ -113,10 +185,7 @@ export default function EntryCard({ entry, currentUserId, onLike, onFollow, dela
           </div>
         </div>
         {!isOwn && (
-          <button
-            className={s.followBtn + (localFollowing ? ' ' + s.following : '')}
-            onClick={handleFollowClick}
-          >
+          <button className={s.followBtn + (localFollowing ? ' ' + s.following : '')} onClick={handleFollowClick}>
             {localFollowing ? 'Following' : '+ Follow'}
           </button>
         )}
@@ -151,16 +220,21 @@ export default function EntryCard({ entry, currentUserId, onLike, onFollow, dela
 
       {/* Actions */}
       <div className={s.actions}>
-        <button className={s.actionBtn + (entry.liked ? ' ' + s.liked : '')} onClick={() => onLike(entry.id, entry.liked)}>
+        <button className={s.actionBtn + (entry.liked ? ' ' + s.liked : '')} onClick={handleLikeClick}>
           <HeartIcon filled={entry.liked} />
-          <span>{entry.like_count || 0}</span>
+          <span>{localLikeCount}</span>
         </button>
         <button className={s.actionBtn + (showComments ? ' ' + s.active : '')} onClick={toggleComments}>
           <CommentIcon />
-          <span>{entry.comment_count || 0}</span>
+          <span>{localCommentCount}</span>
+          {showComments && <span className={s.liveDot} title="Live" />}
         </button>
         <button className={s.actionBtn} onClick={() => {
-          if (navigator.share) navigator.share({ title: `@${profile.username} on CalenStar`, text: entry.text, url: window.location.origin + `/profile/${entry.user_id}` })
+          if (navigator.share) navigator.share({
+            title: `@${profile.username} on CalenStar`,
+            text: entry.text,
+            url: `${window.location.origin}/profile/${entry.user_id}`
+          })
         }}>
           <ShareIcon />
         </button>
@@ -169,10 +243,13 @@ export default function EntryCard({ entry, currentUserId, onLike, onFollow, dela
       {/* Comments */}
       {showComments && (
         <div className={s.comments}>
+          {comments.length === 0 && commentsLoaded && (
+            <p className={s.noComments}>No comments yet — be the first!</p>
+          )}
           {comments.length > 0 && (
             <div className={s.commentList}>
               {comments.map(c => (
-                <div key={c.id} className={s.commentRow}>
+                <div key={c.id} className={s.commentRow + ' fade-up'}>
                   <div className={s.commentAvatar}>
                     <AvatarThumb url={c.profiles?.avatar_url} username={c.profiles?.username} small />
                   </div>
@@ -182,13 +259,14 @@ export default function EntryCard({ entry, currentUserId, onLike, onFollow, dela
                   </div>
                 </div>
               ))}
+              <div ref={bottomRef} />
             </div>
           )}
           <div className={s.commentInput}>
             <input
               value={comment}
               onChange={e => setComment(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && submitComment()}
+              onKeyDown={e => e.key === 'Enter' && !e.shiftKey && submitComment()}
               placeholder="Add a comment…"
               className={s.commentBox}
             />

@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import EntryCard from '../components/EntryCard'
 import AdCard from '../components/AdCard'
+import StoriesStrip from '../components/StoriesStrip'
 import Spinner from '../components/Spinner'
 import s from './FeedPage.module.css'
 
@@ -213,6 +214,7 @@ export default function FeedPage() {
       {/* ── Friends Feed ── */}
       <div className={s.section}>
         <p className={s.sectionTitle}>Friends' Days</p>
+        <StoriesStrip />
         {feedLoading ? (
           <div className={s.center}><Spinner /></div>
         ) : feed.length === 0 ? (
