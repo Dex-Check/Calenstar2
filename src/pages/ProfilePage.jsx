@@ -227,7 +227,7 @@ export default function ProfilePage() {
 
             <div className={s.editField}>
               <label className={s.editLabel}>Bio</label>
-              <textarea className={s.editTextarea} value={editBio} onChange={e=>setBio(e.target.value)}
+              <textarea className={s.editTextarea} value={editBio} onChange={e=>setEditBio(e.target.value)}
                 rows={3} maxLength={150} placeholder="Tell people about yourself…" />
               <p className={s.charCount}>{editBio.length}/150</p>
             </div>
