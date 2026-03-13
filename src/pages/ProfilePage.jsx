@@ -55,12 +55,13 @@ export default function ProfilePage() {
   async function load() {
     setLoading(true)
     try {
+      // Build entries query — own profile sees all, others only see public
+      let entriesQ = supabase.from('entries').select('*').eq('user_id', uid).order('date', { ascending: false }).limit(60)
+      if (!isOwn) entriesQ = entriesQ.eq('is_public', true)
+
       const [{ data: prof }, { data: ents }, { count: frs }, { count: fing }, { data: myFollow }] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', uid).single(),
-        supabase.from('entries').select('*')
-          .eq('user_id', uid)
-          .eq('is_public', isOwn ? undefined : true) // own profile shows all entries
-          .order('date', { ascending: false }).limit(60),
+        entriesQ,
         supabase.from('follows').select('*', { count:'exact', head:true }).eq('following_id', uid).eq('status','accepted'),
         supabase.from('follows').select('*', { count:'exact', head:true }).eq('follower_id', uid).eq('status','accepted'),
         isOwn ? Promise.resolve({ data: null }) : supabase.from('follows').select('status').eq('follower_id', session.user.id).eq('following_id', uid).maybeSingle(),

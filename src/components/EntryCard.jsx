@@ -12,6 +12,15 @@ const CATEGORIES = [
   { id:'health',   label:'Health',   icon:'🍃', color:'#80ffdb' },
 ]
 
+// Handles regular photos, emoji: prefix, and fallback initials
+function AvatarThumb({ url, username, small }) {
+  const sz = small ? s.commentAvatarImg : s.avatarImg
+  const fbSz = small ? s.commentAvatarFb : s.avatarFb
+  if (!url) return <div className={fbSz}>{(username||'?')[0].toUpperCase()}</div>
+  if (url.startsWith('emoji:')) return <div className={small ? s.commentAvatarEmoji : s.avatarEmoji}>{url.replace('emoji:','')}</div>
+  return <img src={url} alt="" className={sz} />
+}
+
 export default function EntryCard({ entry, currentUserId, onLike, onFollow, delay = 0 }) {
   const nav = useNavigate()
   const [showComments, setShowComments] = useState(false)
@@ -93,10 +102,7 @@ export default function EntryCard({ entry, currentUserId, onLike, onFollow, dela
       {/* Author */}
       <div className={s.author} onClick={() => nav(`/profile/${entry.user_id}`)}>
         <div className={s.avatarWrap}>
-          {profile.avatar_url
-            ? <img src={profile.avatar_url} alt="" className={s.avatarImg} />
-            : <div className={s.avatarFb}>{(profile.username||'?')[0].toUpperCase()}</div>
-          }
+          <AvatarThumb url={profile.avatar_url} username={profile.username} />
           {(profile.streak||0) >= 3 && <div className={s.streakDot}>🔥</div>}
         </div>
         <div className={s.authorInfo}>
@@ -168,10 +174,7 @@ export default function EntryCard({ entry, currentUserId, onLike, onFollow, dela
               {comments.map(c => (
                 <div key={c.id} className={s.commentRow}>
                   <div className={s.commentAvatar}>
-                    {c.profiles?.avatar_url
-                      ? <img src={c.profiles.avatar_url} alt="" className={s.commentAvatarImg} />
-                      : <div className={s.commentAvatarFb}>{(c.profiles?.username||'?')[0].toUpperCase()}</div>
-                    }
+                    <AvatarThumb url={c.profiles?.avatar_url} username={c.profiles?.username} small />
                   </div>
                   <div className={s.commentBody}>
                     <span className={s.commentUser}>@{c.profiles?.username}</span>

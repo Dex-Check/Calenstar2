@@ -38,22 +38,31 @@ export default function NotificationsPage() {
         {/* Push notification toggle */}
         {supported && (
           <div className={s.pushRow}>
-            <div className={s.pushInfo}>
-              <p className={s.pushTitle}>Push notifications</p>
-              <p className={s.pushSub}>
-                {!subscribed
-                  ? 'Get notified when someone likes or follows you'
-                  : 'You\'ll be notified of likes, comments & follows'
-                }
-              </p>
+            <div className={s.pushLeft}>
+              <span className={s.pushIcon}>{subscribed ? '🔔' : '🔕'}</span>
+              <div className={s.pushInfo}>
+                <p className={s.pushTitle}>Push notifications</p>
+                <p className={s.pushSub}>
+                  {permission === 'denied'
+                    ? 'Blocked in browser settings — enable in site permissions'
+                    : subscribed
+                      ? 'On — you\'ll be notified of likes, comments & follows'
+                      : 'Off — tap to get notified of activity'
+                  }
+                </p>
+              </div>
             </div>
-            {pushLoading ? <Spinner size={20} /> : (
-              subscribed
-                ? <button className={s.pushBtn + ' ' + s.pushOn} onClick={unsubscribe}>On</button>
-                : <button className={s.pushBtn} onClick={subscribe} disabled={permission === 'denied'}>
-                    {permission === 'denied' ? 'Blocked' : 'Turn on'}
-                  </button>
-            )}
+            <div className={s.pushToggleWrap}>
+              {pushLoading ? <Spinner size={20} /> : (
+                <button
+                  className={s.pushToggle + (subscribed ? ' ' + s.pushToggleOn : '')}
+                  onClick={subscribed ? unsubscribe : subscribe}
+                  disabled={permission === 'denied'}
+                >
+                  <div className={s.pushThumb} />
+                </button>
+              )}
+            </div>
           </div>
         )}
       </header>
